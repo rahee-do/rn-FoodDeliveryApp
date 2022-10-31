@@ -3,6 +3,7 @@ import {
   Alert,
   Dimensions,
   Image,
+  Platform,
   Pressable,
   StyleSheet,
   Text,
@@ -50,6 +51,8 @@ function Complete() {
     ).then(r => {
       console.log(r.uri, r.name);
 
+      // { url: '경로', filename: '파일 이름', type: '확장자' } 형식으로
+      // multipart/form-data 통해서 업로드 하면 된다.
       setImage({
         uri: r.uri,
         name: r.name,
@@ -89,7 +92,14 @@ function Complete() {
       return;
     }
     const formData = new FormData();
-    formData.append('image', image);
+    formData.append('image', {
+      name: image.name,
+      type: image.type || 'image/jpeg',
+      uri:
+        Platform.OS === 'android'
+          ? image.uri
+          : image.uri.replace('file://', ''),
+    });
     formData.append('orderId', orderId);
     try {
       await axios.post(`${Config.API_URL}/complete`, formData, {
